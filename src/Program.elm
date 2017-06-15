@@ -6,6 +6,9 @@ import Html5.DragDrop as DragDrop
 import List.Extra exposing (splitWhen)
 
 
+-- Model
+
+
 type Relative = Before | After
 
 
@@ -55,14 +58,20 @@ moveCard cardIdToMove {id, relative} cards =
       [] -> cards
 
 
-type Msg
-    = DragDropMsg (DragDrop.Msg Int Position)
+cardIds cards = List.map (\x -> x.id) cards
 
 
 model =
     { cards = [ Card 1 "A card (1)", Card 2 "Another card (2)", Card 3 "Yet another card (3)" ]
     , dragDrop = DragDrop.init
     }
+
+
+-- Update
+
+
+type Msg
+    = DragDropMsg (DragDrop.Msg Int Position)
 
 
 doDragDrop msg model =
@@ -89,13 +98,7 @@ update msg model =
         DragDropMsg dragMsg -> doDragDrop dragMsg model
 
 
-isNothing maybe =
-    case maybe of
-        Just _ ->
-            False
-
-        Nothing ->
-            True
+-- View
 
 
 cardStyle = style
@@ -150,8 +153,6 @@ isXBeforeY x y xs =
         True
       else
         isXBeforeY x y (x2::xs)
-
-cardIds cards = List.map (\x -> x.id) cards
 
 
 view model =
