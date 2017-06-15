@@ -9,13 +9,10 @@ import List.Extra exposing (splitWhen)
 -- Model
 
 
-type Relative = Before | After
-
-
-type alias Position =
-  { id: Int,
-    relative: Relative
-  }
+-- Describes where to insert a card
+type Insert =
+    Before Int
+  | Last
 
 
 type alias Card =
@@ -26,7 +23,7 @@ type alias Card =
 
 type alias Model =
     { cards : List Card
-    , dragDrop : DragDrop.Model Int Position
+    , dragDrop : DragDrop.Model Int Insert
     }
 
 
@@ -37,24 +34,20 @@ insertBefore new predicate xs =
     Nothing -> xs
 
 
-insertAfter : a -> (a -> Bool) -> List a -> List a
-insertAfter new predicate xs =
-  case splitWhen predicate xs of
-    Just (before, headAfter::restAfter) -> before ++ headAfter :: new :: restAfter
-    Just (before, []) -> before
-    Nothing -> xs
+insertLast : a -> List a -> List a
+insertLast new xs = xs ++ [new]
 
 
-moveCard : Int -> Position -> List Card -> List Card
-moveCard cardIdToMove {id, relative} cards =
+moveCard : Int -> Insert -> List Card -> List Card
+moveCard cardIdToMove insert cards =
   let
     (otherCards, movedCards) = List.partition (\card -> card.id /= cardIdToMove) cards
   in
     case movedCards of
       movedCard :: rest ->
-        case relative of
-          Before -> insertBefore movedCard (\card -> card.id == id) otherCards
-          After -> insertAfter movedCard (\card -> card.id == id) otherCards
+        case insert of
+          Before id -> insertBefore movedCard (\card -> card.id == id) otherCards
+          Last -> insertLast movedCard otherCards
       [] -> cards
 
 
@@ -71,7 +64,7 @@ model =
 
 
 type Msg
-    = DragDropMsg (DragDrop.Msg Int Position)
+    = DragDropMsg (DragDrop.Msg Int Insert)
 
 
 doDragDrop msg model =
@@ -86,10 +79,10 @@ doDragDrop msg model =
         Nothing ->
           model.cards
 
-        Just (_, position) ->
+        Just (_, insert) ->
           case dragId of
             Nothing -> model.cards
-            Just dragId -> moveCard dragId position model.cards
+            Just dragId -> moveCard dragId insert model.cards
     } ! []
 
 
@@ -128,9 +121,9 @@ dropStyle = style
   ]
 
 
-dropZone cardId pos =
+dropZone insert =
   div
-    ( dropStyle :: (DragDrop.droppable DragDropMsg (Position cardId pos)) )
+    ( dropStyle :: (DragDrop.droppable DragDropMsg insert) )
     []
 
 
@@ -138,7 +131,7 @@ viewCard card withDropZones =
   let
     draggableAttributes = DragDrop.draggable DragDropMsg card.id
     attributes = cardStyle :: draggableAttributes
-    handleDropZone element = if withDropZones then (dropZone card.id Before :: element :: []) else [element]
+    handleDropZone element = if withDropZones then (dropZone (Before card.id) :: element :: []) else [element]
     cardElement = div attributes [ text card.label ]
   in
     div [] (handleDropZone cardElement)
@@ -185,10 +178,7 @@ view model =
 
         lastDropZone =
           case dragId of
-            Just id ->
-              case lastCard of
-                Just theLastCardIsReal -> [dropZone theLastCardIsReal.id After]
-                Nothing -> []
+            Just id -> if isLastCardDragged then [] else [dropZone Last]
             Nothing -> []
 
         viewCards = List.map (\card -> viewCard card (showZones card.id)) model.cards
