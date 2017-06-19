@@ -28,7 +28,10 @@ type alias Model =
 
 -- This doesn't look right!
 -- List.Extra can come in handy, for example using splitWhen that is already imported (!)
--- Try using elm-repl in the command line to test out an implementation
+-- http://package.elm-lang.org/packages/elm-community/list-extra/6.1.0/List-Extra#splitWhen
+--
+-- Try using elm-repl in the command line to test out your implementation
+--
 insertBefore : a -> (a -> Bool) -> List a -> List a
 insertBefore insert when into = insert :: into
 
@@ -125,8 +128,9 @@ instructions = div [instructionStyle]
   [ h1 [] [ text "Step 1" ]
   , p [] [ text "Try dragging and dropping!" ]
   , p [] [ text "Let's fix the first problem; make the drag drop move the cards where we expect them. Look for insertBefore and insertAfter in the code." ]
-  , p [] [ text "Concepts include passing functions as parameters, pattern matching and list concatenation." ]
-  , p [] [ text "Another problem is that we can show drop zones that don't make sense (the card is already there), but let's fix that later." ]
+  , p [] [ text "Concepts include passing functions as parameters, pattern matching and working with lists (tip: "
+    , a [href "http://package.elm-lang.org/packages/elm-community/list-extra/6.1.0/List-Extra#splitWhen"] [ text "splitWhen)" ]
+    ]
   ]
 
 
