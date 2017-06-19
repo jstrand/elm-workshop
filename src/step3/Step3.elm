@@ -1,4 +1,4 @@
-module Program exposing (..)
+module Step3 exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -28,10 +28,10 @@ type alias Model =
 
 
 insertBefore : a -> (a -> Bool) -> List a -> List a
-insertBefore new predicate xs =
-  case splitWhen predicate xs of
-    Just (before, after) -> before ++ new :: after
-    Nothing -> xs
+insertBefore insert when into =
+  case splitWhen when into of
+    Just (before, after) -> before ++ insert :: after
+    Nothing -> into
 
 
 insertLast : a -> List a -> List a
@@ -145,7 +145,17 @@ isXBeforeY x y xs =
       if x1 == x && x2 == y then
         True
       else
-        isXBeforeY x y (x2::xs)
+        isXBeforeY x y xs
+
+
+instruction t = p [] [ text t ]
+
+
+instructions = div [instructionStyle]
+  [ h1 [] [ text "Step 3" ]
+  , instruction "In this step we just want to be able to drop cards where it makes sense, that is not where it already is."
+  , a [href "../step4/Step4.elm"] [text "Step 4"]
+  ]
 
 
 view model =

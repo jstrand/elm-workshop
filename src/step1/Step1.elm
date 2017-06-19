@@ -9,10 +9,11 @@ import List.Extra exposing (splitWhen)
 -- Model
 
 
-type Position =
-    Before | After
+type Position = Before | After
+
 
 type alias Insert = (Position, Int)
+
 
 type alias Card =
   { id: Int
@@ -45,7 +46,7 @@ moveCard cardIdToMove insert cards =
       movedCard :: _ ->
         case insert of
           (Before, id) -> insertBefore movedCard (\card -> card.id == id) otherCards
-          (After, id) -> insertBefore movedCard (\card -> card.id == id) otherCards
+          (After, id) -> insertBefore movedCard (\card -> card.id == id) otherCards -- ignore this for now
       [] -> cards
 
 
@@ -124,13 +125,17 @@ instructionStyle = style
   ]
 
 
+instruction t = p [] [ text t ]
+
+
 instructions = div [instructionStyle]
   [ h1 [] [ text "Step 1" ]
-  , p [] [ text "Try dragging and dropping!" ]
-  , p [] [ text "Let's fix the first problem; make the drag drop move the cards where we expect them. Look for insertBefore and insertAfter in the code." ]
+  , instruction "Try dragging and dropping!"
+  , instruction "Let's fix the first problem; make the drag drop move the cards where we expect them. Look for insertBefore and insertAfter in the code." ]
   , p [] [ text "Concepts include passing functions as parameters, pattern matching and working with lists (tip: "
     , a [href "http://package.elm-lang.org/packages/elm-community/list-extra/6.1.0/List-Extra#splitWhen"] [ text "splitWhen)" ]
     ]
+  , a [href "../step2/Step2.elm"] [text "Step 2"]
   ]
 
 

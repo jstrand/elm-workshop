@@ -1,4 +1,4 @@
-module Step1 exposing (..)
+module Step2 exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -9,10 +9,11 @@ import List.Extra exposing (splitWhen)
 -- Model
 
 
-type Position =
-    Before | After
+type Position = Before | After
+
 
 type alias Insert = (Position, Int)
+
 
 type alias Card =
   { id: Int
@@ -30,7 +31,7 @@ insertBefore : a -> (a -> Bool) -> List a -> List a
 insertBefore insert when into =
   case splitWhen when into of
     Just (before, after) -> before ++ insert :: after
-    Nothing -> into
+    Nothing -> insert :: into
 
 
 insertLast : a -> List a -> List a
@@ -46,7 +47,7 @@ moveCard cardIdToMove insert cards =
       movedCard :: _ ->
         case insert of
           (Before, id) -> insertBefore movedCard (\card -> card.id == id) otherCards
-          (After, id) -> insertAfter movedCard (\card -> card.id == id) otherCards
+          (After, id) -> insertLast movedCard otherCards
       [] -> cards
 
 
@@ -125,12 +126,17 @@ instructionStyle = style
   ]
 
 
+instruction t = p [] [ text t ]
+
+
 instructions = div [instructionStyle]
-  [ h1 [] [ text "Step 1" ]
-  , p [] [ text "Try dragging and dropping!" ]
-  , p [] [ text "Let's fix the first problem; make the drag drop move the cards where we expect them. Look for insertBefore and insertAfter in the code." ]
-  , p [] [ text "Concepts include passing functions as parameters, pattern matching and list concatenation." ]
-  , p [] [ text "Another problem is that we can show drop zones that don't make sense (the card is already there), but let's fix that later." ]
+  [ h1 [] [ text "Step 2" ]
+  , instruction "Now that insertBefore works drag and drop should work."
+  , instruction "However, we would like to be able to drag cards to the end of the column. A new drop zone has now been added to the column after all cards and it works, but the model is a bit outdated, it requires an ID for a card even though we just want it at the end of the column."
+  , instruction "The type Position is currently Before | After, but let's try deleting the Position type altogether and changing the type Insert to be:"
+  , pre [] [text "type Insert = Before Int | Last"]
+  , instruction "See what the compiler starts complaining about, follow the compiler errors until it works again, then move on to step 3."
+  , a [href "../step3/Step3.elm"] [text "Step 3"]
   ]
 
 
@@ -149,6 +155,7 @@ viewCard card withDropZones =
   in
     div [] (handleDropZone cardElement)
 
+
 view model =
     let
         dragId = DragDrop.getDragId model.dragDrop
@@ -160,8 +167,14 @@ view model =
             Nothing -> False
 
         viewCards = List.map (\card -> viewCard card isDraggingACard) model.cards
+
+        fakeLastCardId = 0
+        lastDropZone =
+          case isDraggingACard of
+            True -> [dropZone (After, fakeLastCardId)]
+            False -> []
     in
-        div [] [ div [columnStyle] viewCards, instructions ]
+        div [] [ div [columnStyle] (viewCards ++ lastDropZone), instructions ]
 
 
 main =
