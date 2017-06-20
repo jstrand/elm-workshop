@@ -142,15 +142,17 @@ viewCard card withDropZones =
     div [] (handleDropZone cardElement)
 
 
-isXBeforeY x y xs =
-  case xs of
+-- Try me in the elm-repl!
+isOneBeforeTheOther : a -> a -> List a -> Bool
+isOneBeforeTheOther one other list =
+  case list of
     [] -> False
-    x :: [] -> False
-    x1 :: x2 :: xs ->
-      if x1 == x && x2 == y then
+    _ :: [] -> False
+    first :: second :: rest ->
+      if first == one && second == other then
         True
       else
-        isXBeforeY x y xs
+        isOneBeforeTheOther first second rest
 
 
 instruction t = p [] [ text t ]
@@ -185,11 +187,11 @@ view model =
                 Nothing -> False
             Nothing -> False
 
-        -- This is one way of going from a Maybe to a Bool, dragId is a Maybe because there might not
-        -- be any dragging going on
+        -- Here is an alternative to 'case' when converting from a Maybe to a Bool,
+        -- dragId is a Maybe because there might not be any dragging going on
         isCardBeforeDragged cardId =
           dragId
-          |> Maybe.map (\id -> isXBeforeY id cardId allCardIds)
+          |> Maybe.map (\draggedId -> isOneBeforeTheOther draggedId cardId allCardIds)
           |> Maybe.withDefault False
 
         showZones cardId =
