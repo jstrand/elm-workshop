@@ -121,6 +121,11 @@ dropStyle = style
   ]
 
 
+instructionStyle = style
+  [ ("margin", "10px")
+  ]
+
+
 dropZone insert =
   div
     ( dropStyle :: (DragDrop.droppable DragDropMsg insert) )
@@ -152,8 +157,10 @@ instruction t = p [] [ text t ]
 
 
 instructions = div [instructionStyle]
-  [ h1 [] [ text "Step 3" ]
-  , instruction "In this step we just want to be able to drop cards where it makes sense, that is not where it already is."
+  [ h1 [] [ text "Step 3 - Fixing a bug" ]
+  , instruction "In this step we only want to be able to drop cards where it makes sense. This means that there should be no drop zone before or after the card being dragged."
+  , instruction "Code has already been added to do this, feel free to look it over. Does it work though?"
+  , instruction "When it works, move on!"
   , a [href "../step4/Step4.elm"] [text "Step 4"]
   ]
 
@@ -168,6 +175,8 @@ view model =
           |> List.reverse
           |> List.head
 
+        -- Here we use "cases" to act differently depending on if there is a drag operation active
+        -- Checking the last card follows the same pattern
         isLastCardDragged =
           case dragId of
             Just id ->
@@ -176,6 +185,8 @@ view model =
                 Nothing -> False
             Nothing -> False
 
+        -- This is one way of going from a Maybe to a Bool, dragId is a Maybe because there might not
+        -- be any dragging going on
         isCardBeforeDragged cardId =
           dragId
           |> Maybe.map (\id -> isXBeforeY id cardId allCardIds)
@@ -193,7 +204,7 @@ view model =
 
         viewCards = List.map (\card -> viewCard card (showZones card.id)) model.cards
     in
-        div [columnStyle] (viewCards ++ lastDropZone)
+        div [] [ div [columnStyle] (viewCards ++ lastDropZone), instructions ]
 
 
 main =

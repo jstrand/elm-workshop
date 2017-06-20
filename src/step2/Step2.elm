@@ -130,7 +130,7 @@ instruction t = p [] [ text t ]
 
 
 instructions = div [instructionStyle]
-  [ h1 [] [ text "Step 2" ]
+  [ h1 [] [ text "Step 2 - Model change" ]
   , instruction "Now that insertBefore works drag and drop should work."
   , instruction "However, we would like to be able to drag cards to the end of the column. A new drop zone has now been added to the column after all cards and it works, but the model is a bit outdated, it requires an ID for a card even though we just want it at the end of the column."
   , instruction "The type Position is currently Before | After, but let's try deleting the Position type altogether and changing the type Insert to be:"

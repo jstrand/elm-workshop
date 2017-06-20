@@ -129,7 +129,7 @@ instruction t = p [] [ text t ]
 
 
 instructions = div [instructionStyle]
-  [ h1 [] [ text "Step 1" ]
+  [ h1 [] [ text "Step 1 - Dropping in" ]
   , instruction "Try dragging and dropping!"
   , instruction "Let's fix the first problem; make the drag drop move the cards where we expect them. Look for insertBefore and insertAfter in the code." ]
   , p [] [ text "Concepts include passing functions as parameters, pattern matching and working with lists (tip: "
