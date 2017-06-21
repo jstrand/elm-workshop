@@ -1,6 +1,7 @@
-module Step3 exposing (..)
+module Step4 exposing (..)
 
 import Html exposing (..)
+import Html.Events as Events
 import Html.Attributes exposing (..)
 import Html5.DragDrop as DragDrop
 import List.Extra exposing (splitWhen)
@@ -24,6 +25,7 @@ type alias Card =
 type alias Model =
     { cards : List Card
     , dragDrop : DragDrop.Model Int Insert
+    , newCardName : String
     }
 
 
@@ -54,9 +56,20 @@ moveCard cardIdToMove insert cards =
 cardIds cards = List.map (\x -> x.id) cards
 
 
+nextCardId : List Card -> Int
+nextCardId cards =
+  let
+    existingIds = cardIds cards
+  in
+    case List.maximum existingIds of
+      Just max -> max + 1
+      Nothing -> 0
+
+
 model =
     { cards = [ Card 1 "A card (1)", Card 2 "Another card (2)", Card 3 "Yet another card (3)" ]
     , dragDrop = DragDrop.init
+    , newCardName = ""
     }
 
 
@@ -65,7 +78,8 @@ model =
 
 type Msg
     = DragDropMsg (DragDrop.Msg Int Insert)
-
+    | AddCard
+    | EnterCardName String
 
 doDragDrop msg model =
   let
@@ -86,9 +100,25 @@ doDragDrop msg model =
     } ! []
 
 
+addCard cards name =
+  let
+    newCard = Card (nextCardId cards) name
+  in
+    newCard :: cards
+
+
 update msg model =
-    case msg of
-        DragDropMsg dragMsg -> doDragDrop dragMsg model
+  case msg of
+
+    DragDropMsg dragMsg -> doDragDrop dragMsg model
+
+    AddCard -> (
+      { model
+      | cards = addCard model.cards model.newCardName
+      , newCardName = ""
+      }, Cmd.none)
+
+    EnterCardName newName -> ({ model | newCardName = newName }, Cmd.none)
 
 
 -- View
@@ -121,6 +151,11 @@ dropStyle = style
   ]
 
 
+inputCardStyle = style
+  [ ("margin", "10px")
+  ]
+
+
 instructionStyle = style
   [ ("margin", "10px")
   ]
@@ -142,7 +177,6 @@ viewCard card withDropZones =
     div [] (handleDropZone cardElement)
 
 
--- Try me in the elm-repl!
 isOneBeforeTheOther : a -> a -> List a -> Bool
 isOneBeforeTheOther one other list =
   case list of
@@ -150,19 +184,23 @@ isOneBeforeTheOther one other list =
       if first == one && second == other then
         True
       else
-        isOneBeforeTheOther one other rest
+        isOneBeforeTheOther one other (second :: rest)
     _ -> False
 
 
 instruction t = p [] [ text t ]
 
 
-instructions = div [instructionStyle]
-  [ h1 [] [ text "Step 3 - Fixing a bug" ]
-  , instruction "In this step we only want to be able to drop cards where it makes sense. This means that there should be no drop zone before or after the card being dragged."
-  , instruction "Code has already been added to do this, feel free to look it over. Does it work though?"
-  , instruction "When it works, move on!"
-  , a [href "../step4/Step4.elm"] [text "Step 4"]
+instructions = div [inputCardStyle]
+  [ h1 [] [ text "Step 4 - The Text Field" ]
+  , instruction "It's time to add cards"
+  , a [href "../step5/Step5.elm"] [text "Step 5"]
+  ]
+
+
+viewCardInput nameSoFar = div [cardStyle]
+  [ input [size 14, Events.onInput EnterCardName, value nameSoFar] []
+  , button [Events.onClick AddCard] [text "Add"]
   ]
 
 
@@ -205,7 +243,7 @@ view model =
 
         viewCards = List.map (\card -> viewCard card (showZones card.id)) model.cards
     in
-        div [] [ div [columnStyle] (viewCards ++ lastDropZone), instructions ]
+        div [] [ div [columnStyle] ((viewCardInput model.newCardName) :: viewCards ++ lastDropZone), instructions ]
 
 
 main =
