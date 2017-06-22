@@ -24,6 +24,7 @@ type alias Card =
 type alias Model =
     { cards : List Card
     , dragDrop : DragDrop.Model Int Insert
+    , newCardName : String
     }
 
 
@@ -54,27 +55,20 @@ moveCard cardIdToMove insert cards =
 cardIds cards = List.map (\x -> x.id) cards
 
 
--- Help me!
--- Given a list of cards I should return a new number that is not already an id amongst the given cards
--- List.maximum could come in handy to implement me, so could cardIds
--- http://package.elm-lang.org/packages/elm-lang/core/5.1.1/List#maximum
 nextCardId : List Card -> Int
-nextCardId cards = 0
-
-
--- This could be something to use in an update message to add cards
--- (How is nextCardId implemented though?)
-addCard : List Card -> String -> List Card
-addCard cards name =
+nextCardId cards =
   let
-    newCard = Card (nextCardId cards) name
+    existingIds = cardIds cards
   in
-    newCard :: cards
+    case List.maximum existingIds of
+      Just max -> max + 1
+      Nothing -> 0
 
 
 model =
     { cards = [ Card 1 "A card (1)", Card 2 "Another card (2)", Card 3 "Yet another card (3)" ]
     , dragDrop = DragDrop.init
+    , newCardName = ""
     }
 
 
@@ -83,7 +77,8 @@ model =
 
 type Msg
     = DragDropMsg (DragDrop.Msg Int Insert)
-
+    | AddCard
+    | EnterCardName String
 
 doDragDrop msg model =
   let
@@ -104,10 +99,25 @@ doDragDrop msg model =
     } ! []
 
 
+addCard cards name =
+  let
+    newCard = Card (nextCardId cards) name
+  in
+    newCard :: cards
+
+
 update msg model =
   case msg of
 
     DragDropMsg dragMsg -> doDragDrop dragMsg model
+
+    AddCard -> (
+      { model
+      | cards = addCard model.cards model.newCardName
+      , newCardName = ""
+      }, Cmd.none)
+
+    EnterCardName newName -> ({ model | newCardName = newName }, Cmd.none)
 
 
 -- View
@@ -182,18 +192,14 @@ instruction t = p [] [ text t ]
 
 instructions = div [inputCardStyle]
   [ h1 [] [ text "Step 4 - The Text Field" ]
-  , instruction "It's time to add cards. An input field is there along with an alluring button."
-  , instruction "The input field needs some events, the model needs to hold more data and there should be a message to add cards and handle input of the new card name."
-  , a [href "../step5/Step5.elm"] [text "Then it's time to add columns in step 5"]
+  , instruction "It's time to add cards"
+  , a [href "../step5/Step5.elm"] [text "Step 5"]
   ]
 
 
--- Help me!
--- See the example in http://elm-lang.org/examples/buttons on how to act on button events.
--- And http://elm-lang.org/examples/field on how to act on events from input field
 viewCardInput nameSoFar = div [cardStyle]
-  [ input [size 14] []
-  , button [] [text "Add"]
+  [ input [size 14, Events.onInput EnterCardName, value nameSoFar] []
+  , button [Events.onClick AddCard] [text "Add"]
   ]
 
 
@@ -207,7 +213,7 @@ view model =
           |> List.reverse
           |> List.head
 
-        -- Here we use "cases" to act differently depending on if there is a drag operation active or not
+        -- Here we use "cases" to act differently depending on if there is a drag operation active
         -- Checking the last card follows the same pattern
         isLastCardDragged =
           case dragId of
@@ -236,7 +242,7 @@ view model =
 
         viewCards = List.map (\card -> viewCard card (showZones card.id)) model.cards
     in
-        div [] [ div [columnStyle] ((viewCardInput "New card") :: viewCards ++ lastDropZone), instructions ]
+        div [] [ div [columnStyle] ((viewCardInput model.newCardName) :: viewCards ++ lastDropZone), instructions ]
 
 
 main =
