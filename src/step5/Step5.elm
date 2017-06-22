@@ -81,7 +81,7 @@ nextCardId cards =
 
 model =
     -- Övning?
-    { cards = List.foldr addCard [] ["A card", "Another card", "Yet another card" ]
+    { cards = List.foldr addCard [] (["A card", "Another card", "Yet another card"] ++ (List.repeat 10 "generated card"))
     , dragDrop = DragDrop.init
     , newCardName = ""
     , columns = ["Todo", "Doing", "Done"]

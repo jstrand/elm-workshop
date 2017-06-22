@@ -142,7 +142,6 @@ viewCard card withDropZones =
     div [] (handleDropZone cardElement)
 
 
--- Try me in the elm-repl!
 isOneBeforeTheOther : a -> a -> List a -> Bool
 isOneBeforeTheOther one other list =
   case list of
@@ -171,28 +170,23 @@ view model =
         dragId = DragDrop.getDragId model.dragDrop
         allCardIds = cardIds model.cards
 
-        lastCard =
+        maybeLastCard =
           model.cards
           |> List.reverse
           |> List.head
 
-        -- Here we use "cases" to act differently depending on if there is a drag operation active
-        -- Checking the last card follows the same pattern
         isLastCardDragged =
-          case dragId of
-            Just id ->
-              case lastCard of
-                Just theLastCardIsReal -> theLastCardIsReal.id == id
-                Nothing -> False
-            Nothing -> False
+          Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId maybeLastCard
+          |> Maybe.withDefault False
 
         -- Here is an alternative to 'case' when converting from a Maybe to a Bool,
         -- dragId is a Maybe because there might not be any dragging going on
         isCardBeforeDragged cardId =
-          dragId
-          |> Maybe.map (\draggedId -> isOneBeforeTheOther draggedId cardId allCardIds)
+          Maybe.map (\draggedId -> isOneBeforeTheOther draggedId cardId allCardIds) dragId
           |> Maybe.withDefault False
 
+        -- Here we use "cases" to act differently depending on if there is a drag operation active
+        -- Checking the last card follows the same pattern
         showZones cardId =
           case dragId of
             Just id -> cardId /= id && not (isCardBeforeDragged cardId)

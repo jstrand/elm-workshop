@@ -32,8 +32,13 @@ type alias Model =
 -- http://package.elm-lang.org/packages/elm-community/list-extra/6.1.0/List-Extra#splitWhen
 --
 -- Try using elm-repl in the command line to test out your implementation
+-- > cd src/step1
 -- > elm-repl
 -- > import Step1 exposing (..)
+--
+-- Expected behavior would be
+-- > insertBefore 5 (\x -> x == 7) [3,12,7,4] -> [3,12,5,7,4]
+--
 insertBefore : a -> (a -> Bool) -> List a -> List a
 insertBefore insert when into = insert :: into
 
