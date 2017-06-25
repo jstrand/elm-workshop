@@ -4,7 +4,7 @@ Elm Workshop
 
 Let's do something with Elm!
 
-A few "exercises" have been prepared where you are going to incrementally
+A few exercises have been prepared where you are going to incrementally
 tweak, fix and add features to a small app.
 
 Before starting you need to have an editor and a few commands installed.
