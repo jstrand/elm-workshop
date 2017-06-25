@@ -11,14 +11,13 @@ import List.Extra exposing (splitWhen, last)
 
 
 type Insert =
-    Before Int String
-  | Last String
+    Before Int
+  | Last
 
 
 type alias Card =
   { id: Int
   , label: String
-  , column: String
   }
 
 
@@ -26,7 +25,6 @@ type alias Model =
     { cards : List Card
     , dragDrop : DragDrop.Model Int Insert
     , newCardName : String
-    , columns : List String
     }
 
 
@@ -44,7 +42,7 @@ insertLast new xs = xs ++ [new]
 addCard : String -> List Card -> List Card
 addCard name cards =
   let
-    newCard = Card (nextCardId cards) name "Todo"
+    newCard = Card (nextCardId cards) name
   in
     newCard :: cards
 
@@ -57,16 +55,18 @@ moveCard cardIdToMove insert cards =
     case movedCards of
       movedCard :: rest ->
         case insert of
-          Before id column -> insertBefore {movedCard | column = column} (\card -> card.id == id) otherCards
-          Last column -> insertLast {movedCard | column = column} otherCards
+          Before id -> insertBefore movedCard (\card -> card.id == id) otherCards
+          Last -> insertLast movedCard otherCards
       [] -> cards
 
 
-cardIds cards = List.map (\x -> x.id) cards
+cardIds = List.map .id
 
 
+-- This function could be useful to extract only those cards that belong in a given column
+-- Implementation needed...
 cardsInColumn : List Card -> String -> List Card
-cardsInColumn cards column = List.filter (\card -> card.column == column) cards
+cardsInColumn cards column = cards
 
 
 nextCardId : List Card -> Int
@@ -80,11 +80,9 @@ nextCardId cards =
 
 
 model =
-    -- Övning?
     { cards = List.foldr addCard [] ["A card", "Another card", "Yet another card"]
     , dragDrop = DragDrop.init
     , newCardName = ""
-    , columns = ["Todo", "Doing", "Done"]
     }
 
 
@@ -184,7 +182,7 @@ viewCard card withDropZones =
   let
     draggableAttributes = DragDrop.draggable DragDropMsg card.id
     attributes = cardStyle :: draggableAttributes
-    handleDropZone element = if withDropZones then (dropZone (Before card.id card.column) :: element :: []) else [element]
+    handleDropZone element = if withDropZones then (dropZone (Before card.id) :: element :: []) else [element]
     cardElement = div attributes [ text card.label ]
   in
     div [] (handleDropZone cardElement)
@@ -206,7 +204,9 @@ instruction t = p [] [ text t ]
 
 instructions = div [inputCardStyle]
   [ h1 [] [ text "Step 5 - Columns" ]
-  , instruction ""
+  , instruction "There are of course many ways to model columns, but let's try by adding a list of columns (names for example) to the main model and give cards a column attribute."
+  , instruction "Viewing all columns is then a matter of filtering out the cards for each column and map viewColumn on each of the column's cards."
+  , instruction "Events for dropping cards will need to keep track of what column it should end up in."
   , a [href "../Step6/Step6.elm"] [text "Step 6"]
   ]
 
@@ -238,7 +238,7 @@ viewColumn cards column dragId =
 
         lastDropZone =
           case dragId of
-            Just id -> if isLastCardDragged then [] else [dropZone (Last column)]
+            Just id -> if isLastCardDragged then [] else [dropZone Last]
             Nothing -> []
 
         viewCards = List.map (\card -> viewCard card (showZones card.id)) cards
@@ -249,9 +249,7 @@ view model =
   let
      dragId = DragDrop.getDragId model.dragDrop
      columns =
-       model.columns
-       |> List.map (\column -> viewColumn (cardsInColumn model.cards column) column dragId)
-       |> div [columnsStyle]
+       div [columnsStyle] [viewColumn model.cards "Column1" dragId]
   in
     div [] [columns, instructions]
 
