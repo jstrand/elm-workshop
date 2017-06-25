@@ -1,10 +1,10 @@
-module Step5 exposing (..)
+module Step5.Step5 exposing (..)
 
 import Html exposing (..)
 import Html.Events as Events
 import Html.Attributes exposing (..)
 import Html5.DragDrop as DragDrop
-import List.Extra exposing (splitWhen)
+import List.Extra exposing (splitWhen, last)
 
 
 -- Model
@@ -81,7 +81,7 @@ nextCardId cards =
 
 model =
     -- Övning?
-    { cards = List.foldr addCard [] (["A card", "Another card", "Yet another card"] ++ (List.repeat 10 "generated card"))
+    { cards = List.foldr addCard [] ["A card", "Another card", "Yet another card"]
     , dragDrop = DragDrop.init
     , newCardName = ""
     , columns = ["Todo", "Doing", "Done"]
@@ -207,7 +207,7 @@ instruction t = p [] [ text t ]
 instructions = div [inputCardStyle]
   [ h1 [] [ text "Step 5 - Columns" ]
   , instruction ""
-  , a [href "../step6/Step6.elm"] [text "Step 6"]
+  , a [href "../Step6/Step6.elm"] [text "Step 6"]
   ]
 
 
@@ -222,18 +222,9 @@ viewColumn cards column dragId =
     let
         allCardIds = cardIds cards
 
-        lastCard =
-          cards
-          |> List.reverse
-          |> List.head
-
         isLastCardDragged =
-          case dragId of
-            Just id ->
-              case lastCard of
-                Just theLastCardIsReal -> theLastCardIsReal.id == id
-                Nothing -> False
-            Nothing -> False
+          Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last cards)
+          |> Maybe.withDefault False
 
         isCardBeforeDragged cardId =
           dragId

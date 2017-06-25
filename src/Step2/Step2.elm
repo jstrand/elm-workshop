@@ -1,4 +1,4 @@
-module Step2 exposing (..)
+module Step2.Step2 exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -137,7 +137,7 @@ instructions = div [instructionStyle]
   , instruction "The type Position is currently Before | After, but let's try deleting the Position type altogether and changing the type Insert to be:"
   , pre [] [text "type Insert = Before Int | Last"]
   , instruction "See what the compiler starts complaining about, follow the compiler errors until it works again, then move on to step 3."
-  , a [href "../step3/Step3.elm"] [text "Step 3"]
+  , a [href "../Step3/Step3.elm"] [text "Step 3"]
   ]
 
 

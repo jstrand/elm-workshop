@@ -79,9 +79,12 @@ nextCardId cards =
       Nothing -> 0
 
 
+-- To try out performance with many cards, increase this number
+nrOfGeneratedCards = 1
+
+
 model =
-    -- Övning?
-    { cards = List.foldr addCard [] (["A card", "Another card", "Yet another card"] ++ (List.repeat 5 "generated card"))
+    { cards = List.foldr addCard [] (["A card", "Another card", "Yet another card"] ++ (List.repeat nrOfGeneratedCards "generated card"))
     , dragDrop = DragDrop.init
     , newCardName = ""
     , columns = ["Todo", "Doing", "Done"]
@@ -238,12 +241,8 @@ viewColumn cards column dragId =
         allCardIds = cardIds cards
 
         isLastCardDragged =
-          case dragId of
-            Just id ->
-              case last cards of
-                Just theLastCardIsReal -> theLastCardIsReal.id == id
-                Nothing -> False
-            Nothing -> False
+          Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last cards)
+          |> Maybe.withDefault False
 
         isCardBeforeDragged cardId =
           dragId
@@ -278,7 +277,7 @@ viewColumn2 cards column dragId =
                 Nothing -> False
             Nothing -> False
 
-        isCardBeforeDraggedCard cardId = False
+        isCardBeforeDraggedCard cardId =
           dragId
           |> Maybe.andThen (getOneAfterThisOne allCardIds)
           |> Maybe.map ((==) cardId)

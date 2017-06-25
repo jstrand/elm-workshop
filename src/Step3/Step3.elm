@@ -1,9 +1,9 @@
-module Step3 exposing (..)
+module Step3.Step3 exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html5.DragDrop as DragDrop
-import List.Extra exposing (splitWhen)
+import List.Extra exposing (splitWhen, last)
 
 
 -- Model
@@ -51,7 +51,7 @@ moveCard cardIdToMove insert cards =
       [] -> cards
 
 
-cardIds cards = List.map (\x -> x.id) cards
+cardIds = List.map .id
 
 
 model =
@@ -161,7 +161,7 @@ instructions = div [instructionStyle]
   , instruction "In this step we only want to be able to drop cards where it makes sense. This means that there should be no drop zone before or after the card being dragged."
   , instruction "Code has already been added to do this, feel free to look it over. Does it work though?"
   , instruction "When it works, move on!"
-  , a [href "../step4/Step4.elm"] [text "Step 4"]
+  , a [href "../Step4/Step4.elm"] [text "Step 4"]
   ]
 
 
@@ -170,13 +170,8 @@ view model =
         dragId = DragDrop.getDragId model.dragDrop
         allCardIds = cardIds model.cards
 
-        maybeLastCard =
-          model.cards
-          |> List.reverse
-          |> List.head
-
         isLastCardDragged =
-          Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId maybeLastCard
+          Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last model.cards)
           |> Maybe.withDefault False
 
         -- Here is an alternative to 'case' when converting from a Maybe to a Bool,

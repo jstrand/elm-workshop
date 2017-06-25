@@ -1,10 +1,10 @@
-module Step4 exposing (..)
+module Step4.Step4 exposing (..)
 
 import Html exposing (..)
 import Html.Events as Events
 import Html.Attributes exposing (..)
 import Html5.DragDrop as DragDrop
-import List.Extra exposing (splitWhen)
+import List.Extra exposing (splitWhen, last)
 
 
 -- Model
@@ -184,7 +184,7 @@ instructions = div [inputCardStyle]
   [ h1 [] [ text "Step 4 - The Text Field" ]
   , instruction "It's time to add cards. An input field is there along with an alluring button."
   , instruction "The input field needs some events, the model needs to hold more data and there should be a message to add cards and handle input of the new card name."
-  , a [href "../step5/Step5.elm"] [text "Then it's time to add columns in step 5"]
+  , a [href "../Step5/Step5.elm"] [text "Then it's time to add columns in step 5"]
   ]
 
 
@@ -202,23 +202,10 @@ view model =
         dragId = DragDrop.getDragId model.dragDrop
         allCardIds = cardIds model.cards
 
-        lastCard =
-          model.cards
-          |> List.reverse
-          |> List.head
-
-        -- Here we use "cases" to act differently depending on if there is a drag operation active or not
-        -- Checking the last card follows the same pattern
         isLastCardDragged =
-          case dragId of
-            Just id ->
-              case lastCard of
-                Just theLastCardIsReal -> theLastCardIsReal.id == id
-                Nothing -> False
-            Nothing -> False
+          Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last model.cards)
+          |> Maybe.withDefault False
 
-        -- Here is an alternative to 'case' when converting from a Maybe to a Bool,
-        -- dragId is a Maybe because there might not be any dragging going on
         isCardBeforeDragged cardId =
           dragId
           |> Maybe.map (\draggedId -> isOneBeforeTheOther draggedId cardId allCardIds)

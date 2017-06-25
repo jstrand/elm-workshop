@@ -1,4 +1,4 @@
-module Step1 exposing (..)
+module Step1.Step1 exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -28,15 +28,16 @@ type alias Model =
 
 
 -- This doesn't look right!
--- List.Extra can come in handy, for example using splitWhen that is already imported (!)
+-- List.Extra can come in handy, for example using splitWhen, that is already imported (!)
 -- http://package.elm-lang.org/packages/elm-community/list-extra/6.1.0/List-Extra#splitWhen
 --
 -- Try using elm-repl in the command line to test out your implementation
+-- > cd src
 -- > elm-repl
--- > import Step1 exposing (..)
+-- > import Step1.Step1 exposing (..)
 --
 -- Expected behavior would be
--- > insertBefore 5 (\x -> x == 7) [3,12,7,4] -> [3,12,5,7,4]
+-- > insertBefore 5 (\x -> x == 7) [3,12,7,4] == [3,12,5,7,4]
 --
 insertBefore : a -> (a -> Bool) -> List a -> List a
 insertBefore insert when into = insert :: into
@@ -51,11 +52,11 @@ moveCard cardIdToMove insert cards =
       movedCard :: _ ->
         case insert of
           (Before, id) -> insertBefore movedCard (\card -> card.id == id) otherCards
-          (After, id) -> insertBefore movedCard (\card -> card.id == id) otherCards -- ignore this for now
+          (After, id) -> cards -- ignore this for now
       [] -> cards
 
 
-cardIds cards = List.map (\x -> x.id) cards
+cardIds = List.map .id
 
 
 model =
@@ -136,11 +137,11 @@ instruction t = p [] [ text t ]
 instructions = div [instructionStyle]
   [ h1 [] [ text "Step 1 - Dropping in" ]
   , instruction "Try dragging and dropping!"
-  , instruction "Let's fix the first problem; make the drag drop move the cards where we expect them. Look for insertBefore and insertAfter in the code."
+  , instruction "Let's fix the first problem; make the drag drop move the cards where we expect them. Look for insertBefore in the code."
   , p [] [ text "Concepts include passing functions as parameters, pattern matching and working with lists (tip: "
     , a [href "http://package.elm-lang.org/packages/elm-community/list-extra/6.1.0/List-Extra#splitWhen"] [ text "splitWhen)" ]
     ]
-  , a [href "../step2/Step2.elm"] [text "Step 2"]
+  , a [href "../Step2/Step2.elm"] [text "Step 2"]
   ]
 
 
