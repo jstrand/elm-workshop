@@ -10,6 +10,9 @@ import List.Extra exposing (splitWhen, last)
 -- Model
 
 
+type alias Column = String
+
+
 type Insert =
     Before Int
   | Last
