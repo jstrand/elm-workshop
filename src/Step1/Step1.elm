@@ -32,7 +32,6 @@ type alias Model =
 -- http://package.elm-lang.org/packages/elm-community/list-extra/6.1.0/List-Extra#splitWhen
 --
 -- Try using elm-repl in the command line to test out your implementation
--- > cd src/step1
 -- > elm-repl
 -- > import Step1 exposing (..)
 --

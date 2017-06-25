@@ -51,7 +51,8 @@ moveCard cardIdToMove insert cards =
       [] -> cards
 
 
-cardIds cards = List.map (\x -> x.id) cards
+cardIds : List Card -> List Int
+cardIds = List.map .id
 
 
 model =
