@@ -170,6 +170,7 @@ update msg model =
 -- View
 
 
+cardStyle : Attribute Msg
 cardStyle =
     style
         [ ( "background", "white" )
@@ -181,6 +182,7 @@ cardStyle =
         ]
 
 
+columnStyle : Attribute Msg
 columnStyle =
     style
         [ ( "background", "#B8C3F0" )
@@ -191,6 +193,7 @@ columnStyle =
         ]
 
 
+dropStyle : Attribute Msg
 dropStyle =
     style
         [ ( "top", "50%" )
@@ -200,18 +203,21 @@ dropStyle =
         ]
 
 
+inputCardStyle : Attribute Msg
 inputCardStyle =
     style
         [ ( "margin", "10px" )
         ]
 
 
+columnsStyle : Attribute Msg
 columnsStyle =
     style
         [ ( "display", "flex" )
         ]
 
 
+instructionStyle : Attribute Msg
 instructionStyle =
     style
         [ ( "margin", "10px" )

@@ -74,8 +74,9 @@ moveCard cardIdToMove insert cards =
                 cards
 
 
-cardIds cards =
-    List.map (\x -> x.id) cards
+cardIds : List Card -> List Int
+cardIds =
+    List.map .id
 
 
 cardsInColumn : List Card -> String -> List Card
@@ -99,16 +100,17 @@ nextCardId cards =
 
 {-| To try out performance with many cards, increase this number
 -}
+nrOfGeneratedCards : Int
 nrOfGeneratedCards =
     1
 
 
+model : Model
 model =
     { cards = List.foldr addCard [] ([ "A card", "Another card", "Yet another card" ] ++ (List.repeat nrOfGeneratedCards "generated card"))
     , dragDrop = DragDrop.init
     , newCardName = ""
     , columns = [ "Todo", "Doing", "Done" ]
-    , report = Nothing
     }
 
 
@@ -122,6 +124,7 @@ type Msg
     | EnterCardName String
 
 
+doDragDrop : DragDrop.Msg Int Insert -> Model -> ( Model, Cmd Msg )
 doDragDrop msg model =
     let
         ( dragModel, result ) =
@@ -148,6 +151,7 @@ doDragDrop msg model =
             ! []
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DragDropMsg dragMsg ->
@@ -169,6 +173,7 @@ update msg model =
 -- View
 
 
+cardStyle : Attribute Msg
 cardStyle =
     style
         [ ( "background", "white" )
@@ -180,6 +185,7 @@ cardStyle =
         ]
 
 
+columnStyle : Attribute Msg
 columnStyle =
     style
         [ ( "background", "#B8C3F0" )
@@ -190,6 +196,7 @@ columnStyle =
         ]
 
 
+dropStyle : Attribute Msg
 dropStyle =
     style
         [ ( "top", "50%" )
@@ -199,30 +206,35 @@ dropStyle =
         ]
 
 
+inputCardStyle : Attribute Msg
 inputCardStyle =
     style
         [ ( "margin", "10px" )
         ]
 
 
+columnsStyle : Attribute Msg
 columnsStyle =
     style
         [ ( "display", "flex" )
         ]
 
 
+instructionStyle : Attribute Msg
 instructionStyle =
     style
         [ ( "margin", "10px" )
         ]
 
 
+dropZone : Insert -> Html Msg
 dropZone insert =
     div
         (dropStyle :: (DragDrop.droppable DragDropMsg insert))
         []
 
 
+viewCard : Card -> Bool -> Html Msg
 viewCard card withDropZones =
     let
         draggableAttributes =
@@ -266,6 +278,7 @@ getOneAfterThisOne list thisOne =
     Nothing
 
 
+instructions : Html Msg
 instructions =
     Markdown.toHtml [ inputCardStyle ] """
 # Step 6 - Performance
@@ -285,6 +298,7 @@ for ```getOneAfterThisOne``` has been provided.
 """
 
 
+viewCardInput : String -> Html Msg
 viewCardInput nameSoFar =
     div [ inputCardStyle ]
         [ input [ size 14, Events.onInput EnterCardName, value nameSoFar ] []
@@ -372,6 +386,7 @@ viewColumn2 cards column dragId =
         div [ columnStyle ] (viewCards ++ lastDropZone)
 
 
+view : Model -> Html Msg
 view model =
     let
         dragId =
@@ -385,6 +400,7 @@ view model =
         div [] [ viewCardInput model.newCardName, columns, instructions ]
 
 
+main : Program Never Model Msg
 main =
     program
         { init = ( model, Cmd.none )

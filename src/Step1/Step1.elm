@@ -41,6 +41,7 @@ Try using elm-repl in the command line to test out your implementation
 > import Step1.Step1 exposing (..)
 > Expected behavior would be
 > insertBefore 5 (\x -> x == 7) [3,12,7,4] == [3,12,5,7,4]
+
 -}
 insertBefore : a -> (a -> Bool) -> List a -> List a
 insertBefore insert when into =
@@ -67,10 +68,12 @@ moveCard cardIdToMove insert cards =
                 cards
 
 
+cardIds : List Card -> List Int
 cardIds =
     List.map .id
 
 
+model : Model
 model =
     { cards = [ Card 1 "A card (1)", Card 2 "Another card (2)", Card 3 "Yet another card (3)" ]
     , dragDrop = DragDrop.init
@@ -85,6 +88,7 @@ type Msg
     = DragDropMsg (DragDrop.Msg Int Insert)
 
 
+doDragDrop : DragDrop.Msg Int Insert -> Model -> ( Model, Cmd Msg )
 doDragDrop msg model =
     let
         ( dragModel, result ) =
@@ -111,6 +115,7 @@ doDragDrop msg model =
             ! []
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DragDropMsg dragMsg ->
@@ -121,6 +126,7 @@ update msg model =
 -- View
 
 
+cardStyle : Attribute Msg
 cardStyle =
     style
         [ ( "background", "white" )
@@ -132,6 +138,7 @@ cardStyle =
         ]
 
 
+columnStyle : Attribute Msg
 columnStyle =
     style
         [ ( "background", "#B8C3F0" )
@@ -142,6 +149,7 @@ columnStyle =
         ]
 
 
+dropStyle : Attribute Msg
 dropStyle =
     style
         [ ( "top", "50%" )
@@ -151,12 +159,14 @@ dropStyle =
         ]
 
 
+instructionStyle : Attribute Msg
 instructionStyle =
     style
         [ ( "margin", "10px" )
         ]
 
 
+instructions : Html Msg
 instructions =
     Markdown.toHtml [ instructionStyle ] """
 # Step 1 - Dropping in
@@ -174,12 +184,14 @@ lists
 """
 
 
+dropZone : Insert -> Html Msg
 dropZone insert =
     div
         (dropStyle :: (DragDrop.droppable DragDropMsg insert))
         []
 
 
+viewCard : Card -> Bool -> Html Msg
 viewCard card withDropZones =
     let
         draggableAttributes =
@@ -200,6 +212,7 @@ viewCard card withDropZones =
         div [] (handleDropZone cardElement)
 
 
+view : Model -> Html Msg
 view model =
     let
         dragId =
@@ -222,6 +235,7 @@ view model =
         div [] [ div [ columnStyle ] viewCards, instructions ]
 
 
+main : Program Never Model Msg
 main =
     program
         { init = ( model, Cmd.none )

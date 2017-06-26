@@ -61,10 +61,12 @@ moveCard cardIdToMove insert cards =
                 cards
 
 
+cardIds : List Card -> List Int
 cardIds =
     List.map .id
 
 
+model : Model
 model =
     { cards = [ Card 1 "A card (1)", Card 2 "Another card (2)", Card 3 "Yet another card (3)" ]
     , dragDrop = DragDrop.init
@@ -79,6 +81,7 @@ type Msg
     = DragDropMsg (DragDrop.Msg Int Insert)
 
 
+doDragDrop : DragDrop.Msg Int Insert -> Model -> ( Model, Cmd Msg )
 doDragDrop msg model =
     let
         ( dragModel, result ) =
@@ -105,6 +108,7 @@ doDragDrop msg model =
             ! []
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DragDropMsg dragMsg ->
@@ -115,6 +119,7 @@ update msg model =
 -- View
 
 
+cardStyle : Attribute Msg
 cardStyle =
     style
         [ ( "background", "white" )
@@ -126,6 +131,7 @@ cardStyle =
         ]
 
 
+columnStyle : Attribute Msg
 columnStyle =
     style
         [ ( "background", "#B8C3F0" )
@@ -136,6 +142,7 @@ columnStyle =
         ]
 
 
+dropStyle : Attribute Msg
 dropStyle =
     style
         [ ( "top", "50%" )
@@ -145,18 +152,21 @@ dropStyle =
         ]
 
 
+instructionStyle : Attribute Msg
 instructionStyle =
     style
         [ ( "margin", "10px" )
         ]
 
 
+dropZone : Insert -> Html Msg
 dropZone insert =
     div
         (dropStyle :: (DragDrop.droppable DragDropMsg insert))
         []
 
 
+viewCard : Card -> Bool -> Html Msg
 viewCard card withDropZones =
     let
         draggableAttributes =
@@ -190,6 +200,7 @@ isOneBeforeTheOther one other list =
             False
 
 
+instructions : Html Msg
 instructions =
     Markdown.toHtml [ instructionStyle ] """
 # Step 3 - Fixing a bug
@@ -205,6 +216,7 @@ When it works, move on!
 """
 
 
+view : Model -> Html Msg
 view model =
     let
         dragId =
@@ -250,6 +262,7 @@ view model =
         div [] [ div [ columnStyle ] (viewCards ++ lastDropZone), instructions ]
 
 
+main : Program Never Model Msg
 main =
     program
         { init = ( model, Cmd.none )

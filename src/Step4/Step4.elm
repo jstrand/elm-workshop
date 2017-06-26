@@ -61,6 +61,7 @@ moveCard cardIdToMove insert cards =
                 cards
 
 
+cardIds : List Card -> List Int
 cardIds cards =
     List.map (\x -> x.id) cards
 
@@ -87,6 +88,7 @@ addCard cards name =
         newCard :: cards
 
 
+model : Model
 model =
     { cards = [ Card 1 "A card (1)", Card 2 "Another card (2)", Card 3 "Yet another card (3)" ]
     , dragDrop = DragDrop.init
@@ -101,6 +103,7 @@ type Msg
     = DragDropMsg (DragDrop.Msg Int Insert)
 
 
+doDragDrop : DragDrop.Msg Int Insert -> Model -> ( Model, Cmd Msg )
 doDragDrop msg model =
     let
         ( dragModel, result ) =
@@ -127,6 +130,7 @@ doDragDrop msg model =
             ! []
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DragDropMsg dragMsg ->
@@ -137,6 +141,7 @@ update msg model =
 -- View
 
 
+cardStyle : Attribute Msg
 cardStyle =
     style
         [ ( "background", "white" )
@@ -148,6 +153,7 @@ cardStyle =
         ]
 
 
+columnStyle : Attribute Msg
 columnStyle =
     style
         [ ( "background", "#B8C3F0" )
@@ -158,6 +164,7 @@ columnStyle =
         ]
 
 
+dropStyle : Attribute Msg
 dropStyle =
     style
         [ ( "top", "50%" )
@@ -167,24 +174,28 @@ dropStyle =
         ]
 
 
+inputCardStyle : Attribute Msg
 inputCardStyle =
     style
         [ ( "margin", "10px" )
         ]
 
 
+instructionStyle : Attribute Msg
 instructionStyle =
     style
         [ ( "margin", "10px" )
         ]
 
 
+dropZone : Insert -> Html Msg
 dropZone insert =
     div
         (dropStyle :: (DragDrop.droppable DragDropMsg insert))
         []
 
 
+viewCard : Card -> Bool -> Html Msg
 viewCard card withDropZones =
     let
         draggableAttributes =
@@ -218,6 +229,7 @@ isOneBeforeTheOther one other list =
             False
 
 
+instructions : Html Msg
 instructions =
     Markdown.toHtml [ inputCardStyle ] """
 # Step 4 - The Text Field
@@ -238,6 +250,7 @@ should be a message to add cards and handle input of the new card name.
 See the example in <http://elm-lang.org/examples/buttons> on how to act on button events.
 And <http://elm-lang.org/examples/field> on how to act on events from input field.
 -}
+viewCardInput : String -> Html Msg
 viewCardInput nameSoFar =
     div [ cardStyle ]
         [ input [ size 14 ] []
@@ -245,6 +258,7 @@ viewCardInput nameSoFar =
         ]
 
 
+view : Model -> Html Msg
 view model =
     let
         dragId =
@@ -287,6 +301,7 @@ view model =
         div [] [ div [ columnStyle ] ((viewCardInput "New card") :: viewCards ++ lastDropZone), instructions ]
 
 
+main : Program Never Model Msg
 main =
     program
         { init = ( model, Cmd.none )
