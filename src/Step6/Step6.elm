@@ -206,15 +206,10 @@ isOneBeforeTheOther one other list =
     _ -> False
 
 
+-- Implement this to speed up drop-zone calculation
+-- Why is it faster?
 getOneAfterThisOne : List a -> a -> Maybe a
-getOneAfterThisOne list thisOne =
-  case list of
-    first :: second :: rest ->
-      if first == thisOne then
-        Just second
-      else
-        getOneAfterThisOne (second :: rest) thisOne
-    _ -> Nothing
+getOneAfterThisOne list thisOne = Nothing
 
 
 instruction t = p [] [ text t ]
@@ -224,12 +219,12 @@ instructions = div [inputCardStyle]
   [ h1 [] [ text "Step 6 - Performance" ]
   , instruction "The performance is probably OK, but let's measure the function viewColumn and see if we can tweak the performance a bit."
   , instruction "There is now both a viewColumn and viewColumn2, if you go to the benchmark both will be measured and then compared."
-  , instruction "Try to change how viewColumn2 decides when to display drop zones, viewColumn checks each card and looks for the dragged card amongst all cards, try to turn this around by looking up the card before the dragged card."
+  , instruction "Try to change how viewColumn2 decides when to display drop zones, viewColumn checks each card and looks for the dragged card amongst all cards, try to turn this around by looking up the card before the dragged card. A type signature for ```getOneAfterThisOne``` has been provided."
   , a [href "Benchmark.elm"] [text "Benchmark"]
   ]
 
 
-viewCardInput nameSoFar = div [cardStyle]
+viewCardInput nameSoFar = div [inputCardStyle]
   [ input [size 14, Events.onInput EnterCardName, value nameSoFar] []
   , button [Events.onClick AddCard] [text "Add"]
   ]
@@ -244,14 +239,14 @@ viewColumn cards column dragId =
           Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last cards)
           |> Maybe.withDefault False
 
-        isCardBeforeDragged cardId =
+        isCardBeforeBeingDragged cardId =
           dragId
           |> Maybe.map (\draggedId -> isOneBeforeTheOther draggedId cardId allCardIds)
           |> Maybe.withDefault False
 
         showZones cardId =
           case dragId of
-            Just id -> cardId /= id && not (isCardBeforeDragged cardId)
+            Just id -> cardId /= id && not (isCardBeforeBeingDragged cardId)
             Nothing -> False
 
         lastDropZone =
@@ -270,22 +265,15 @@ viewColumn2 cards column dragId =
         allCardIds = cardIds cards
 
         isLastCardDragged =
-          case dragId of
-            Just id ->
-              case last cards of
-                Just theLastCardIsReal -> theLastCardIsReal.id == id
-                Nothing -> False
-            Nothing -> False
-
-        isCardBeforeDraggedCard cardId =
-          dragId
-          |> Maybe.andThen (getOneAfterThisOne allCardIds)
-          |> Maybe.map ((==) cardId)
+          Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last cards)
           |> Maybe.withDefault False
+
+        -- Help me out
+        isCardBeforeBeingDragged cardId = False
 
         showZones cardId =
           case dragId of
-            Just id -> cardId /= id && not (isCardBeforeDraggedCard cardId)
+            Just id -> cardId /= id && not (isCardBeforeBeingDragged cardId)
             Nothing -> False
 
         lastDropZone =
@@ -306,7 +294,7 @@ view model =
        |> List.map (\column -> viewColumn2 (cardsInColumn model.cards column) column dragId)
        |> div [columnsStyle]
   in
-    div [] [columns, instructions]
+    div [] [viewCardInput model.newCardName, columns, instructions]
 
 main =
     program

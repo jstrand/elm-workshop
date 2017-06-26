@@ -1,4 +1,4 @@
-module Step5.Step5 exposing (..)
+module Step7.Step7 exposing (..)
 
 import Html exposing (..)
 import Html.Events as Events
@@ -10,17 +10,15 @@ import List.Extra exposing (splitWhen, last)
 -- Model
 
 
-type alias Column = String
-
-
 type Insert =
-    Before Int
-  | Last
+    Before Int String
+  | Last String
 
 
 type alias Card =
   { id: Int
   , label: String
+  , column: String
   }
 
 
@@ -28,6 +26,7 @@ type alias Model =
     { cards : List Card
     , dragDrop : DragDrop.Model Int Insert
     , newCardName : String
+    , columns : List String
     }
 
 
@@ -45,7 +44,7 @@ insertLast new xs = xs ++ [new]
 addCard : String -> List Card -> List Card
 addCard name cards =
   let
-    newCard = Card (nextCardId cards) name
+    newCard = Card (nextCardId cards) name "Todo"
   in
     newCard :: cards
 
@@ -58,18 +57,16 @@ moveCard cardIdToMove insert cards =
     case movedCards of
       movedCard :: rest ->
         case insert of
-          Before id -> insertBefore movedCard (\card -> card.id == id) otherCards
-          Last -> insertLast movedCard otherCards
+          Before id column -> insertBefore {movedCard | column = column} (\card -> card.id == id) otherCards
+          Last column -> insertLast {movedCard | column = column} otherCards
       [] -> cards
 
 
-cardIds = List.map .id
+cardIds cards = List.map (\x -> x.id) cards
 
 
--- This function could be useful to extract only those cards that belong in a given column
--- Implementation needed...
 cardsInColumn : List Card -> String -> List Card
-cardsInColumn cards column = cards
+cardsInColumn cards column = List.filter (\card -> card.column == column) cards
 
 
 nextCardId : List Card -> Int
@@ -82,10 +79,16 @@ nextCardId cards =
       Nothing -> 0
 
 
+-- To try out performance with many cards, increase this number
+nrOfGeneratedCards = 1
+
+
 model =
-    { cards = List.foldr addCard [] ["A card", "Another card", "Yet another card"]
+    { cards = List.foldr addCard [] (["A card", "Another card", "Yet another card"] ++ (List.repeat nrOfGeneratedCards "generated card"))
     , dragDrop = DragDrop.init
     , newCardName = ""
+    , columns = ["Todo", "Doing", "Done"]
+    , report = Nothing
     }
 
 
@@ -96,6 +99,7 @@ type Msg
     = DragDropMsg (DragDrop.Msg Int Insert)
     | AddCard
     | EnterCardName String
+
 
 doDragDrop msg model =
   let
@@ -185,7 +189,7 @@ viewCard card withDropZones =
   let
     draggableAttributes = DragDrop.draggable DragDropMsg card.id
     attributes = cardStyle :: draggableAttributes
-    handleDropZone element = if withDropZones then (dropZone (Before card.id) :: element :: []) else [element]
+    handleDropZone element = if withDropZones then (dropZone (Before card.id card.column) :: element :: []) else [element]
     cardElement = div attributes [ text card.label ]
   in
     div [] (handleDropZone cardElement)
@@ -202,19 +206,30 @@ isOneBeforeTheOther one other list =
     _ -> False
 
 
+getOneAfterThisOne : List a -> a -> Maybe a
+getOneAfterThisOne list thisOne =
+  case list of
+    first :: second :: rest ->
+      if first == thisOne then
+        Just second
+      else
+        getOneAfterThisOne (second :: rest) thisOne
+    _ -> Nothing
+
+
 instruction t = p [] [ text t ]
 
 
 instructions = div [inputCardStyle]
-  [ h1 [] [ text "Step 5 - Columns" ]
-  , instruction "There are of course many ways to model columns, but let's try by adding a list of columns (names for example) to the main model and give cards a column attribute."
-  , instruction "Viewing all columns is then a matter of filtering out the cards for each column and map viewColumn on each of the column's cards."
-  , instruction "Events for dropping cards will need to keep track of what column it should end up in."
-  , a [href "../Step6/Step6.elm"] [text "Step 6"]
+  [ h1 [] [ text "Step 6 - Performance" ]
+  , instruction "The performance is probably OK, but let's measure the function viewColumn and see if we can tweak the performance a bit."
+  , instruction "There is now both a viewColumn and viewColumn2, if you go to the benchmark both will be measured and then compared."
+  , instruction "Try to change how viewColumn2 decides when to display drop zones, viewColumn checks each card and looks for the dragged card amongst all cards, try to turn this around by looking up the card before the dragged card."
+  , a [href "Benchmark.elm"] [text "Benchmark"]
   ]
 
 
-viewCardInput nameSoFar = div [inputCardStyle]
+viewCardInput nameSoFar = div [cardStyle]
   [ input [size 14, Events.onInput EnterCardName, value nameSoFar] []
   , button [Events.onClick AddCard] [text "Add"]
   ]
@@ -229,36 +244,69 @@ viewColumn cards column dragId =
           Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last cards)
           |> Maybe.withDefault False
 
-        isCardBeforeDragged cardId =
+        isCardBeforeBeingDragged cardId =
           dragId
           |> Maybe.map (\draggedId -> isOneBeforeTheOther draggedId cardId allCardIds)
           |> Maybe.withDefault False
 
         showZones cardId =
           case dragId of
-            Just id -> cardId /= id && not (isCardBeforeDragged cardId)
+            Just id -> cardId /= id && not (isCardBeforeBeingDragged cardId)
             Nothing -> False
 
         lastDropZone =
           case dragId of
-            Just id -> if isLastCardDragged then [] else [dropZone Last]
+            Just id -> if isLastCardDragged then [] else [dropZone (Last column)]
             Nothing -> []
 
         viewCards = List.map (\card -> viewCard card (showZones card.id)) cards
     in
         div [columnStyle] (viewCards ++ lastDropZone)
 
+
+viewColumn2 : List Card -> String -> Maybe Int -> Html Msg
+viewColumn2 cards column dragId =
+    let
+        allCardIds = cardIds cards
+
+        isLastCardDragged =
+          Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last cards)
+          |> Maybe.withDefault False
+
+        isCardBeforeBeingDragged cardId =
+          dragId
+          |> Maybe.andThen (getOneAfterThisOne allCardIds)
+          |> Maybe.map ((==) cardId)
+          |> Maybe.withDefault False
+
+        showZones cardId =
+          case dragId of
+            Just id -> cardId /= id && not (isCardBeforeBeingDragged cardId)
+            Nothing -> False
+
+        lastDropZone =
+          case dragId of
+            Just id -> if isLastCardDragged then [] else [dropZone (Last column)]
+            Nothing -> []
+
+        viewCards = List.map (\card -> viewCard card (showZones card.id)) cards
+    in
+        div [columnStyle] (viewCards ++ lastDropZone)
+
+
 view model =
   let
      dragId = DragDrop.getDragId model.dragDrop
      columns =
-       div [columnsStyle] [viewColumn model.cards "Column1" dragId]
+       model.columns
+       |> List.map (\column -> viewColumn2 (cardsInColumn model.cards column) column dragId)
+       |> div [columnsStyle]
   in
-    div [] [viewCardInput model.newCardName, columns, instructions]
+    div [] [columns, instructions]
 
 main =
     program
-        { init = ( model, Cmd.none )
+        { init = ( model, Cmd.none)
         , update = update
         , view = view
         , subscriptions = always Sub.none
