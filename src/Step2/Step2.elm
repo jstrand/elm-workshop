@@ -195,8 +195,8 @@ dropZone insert =
         []
 
 
-viewCard : Card -> Bool -> Html Msg
-viewCard card withDropZones =
+viewCard : Bool -> Card -> Html Msg
+viewCard withDropZones card =
     let
         draggableAttributes =
             DragDrop.draggable DragDropMsg card.id
@@ -216,36 +216,28 @@ viewCard card withDropZones =
         div [] (handleDropZone cardElement)
 
 
+hasValue : Maybe a -> Bool
+hasValue =
+    (Maybe.withDefault False) << (Maybe.map (\_ -> True))
+
+
 view : Model -> Html Msg
 view model =
     let
-        dragId =
-            DragDrop.getDragId model.dragDrop
-
-        allCardIds =
-            cardIds model.cards
-
         isDraggingACard =
-            case dragId of
-                Just _ ->
-                    True
-
-                Nothing ->
-                    False
+            hasValue <| DragDrop.getDragId model.dragDrop
 
         viewCards =
-            List.map (\card -> viewCard card isDraggingACard) model.cards
+            List.map (viewCard isDraggingACard) model.cards
 
         fakeLastCardId =
             0
 
         lastDropZone =
-            case isDraggingACard of
-                True ->
-                    [ dropZone ( After, fakeLastCardId ) ]
-
-                False ->
-                    []
+            if isDraggingACard then
+                [ dropZone ( After, fakeLastCardId ) ]
+            else
+                []
     in
         div [] [ div [ columnStyle ] (viewCards ++ lastDropZone), instructions ]
 
