@@ -11,18 +11,19 @@ import Markdown
 -- Model
 
 
-type alias Column = String
+type alias Column =
+    String
 
 
-type Insert =
-    Before Int
-  | Last
+type Insert
+    = Before Int
+    | Last
 
 
 type alias Card =
-  { id: Int
-  , label: String
-  }
+    { id : Int
+    , label : String
+    }
 
 
 type alias Model =
@@ -34,60 +35,81 @@ type alias Model =
 
 insertBefore : a -> (a -> Bool) -> List a -> List a
 insertBefore insert when into =
-  case splitWhen when into of
-    Just (before, after) -> before ++ insert :: after
-    Nothing -> into
+    case splitWhen when into of
+        Just ( before, after ) ->
+            before ++ insert :: after
+
+        Nothing ->
+            into
 
 
 insertLast : a -> List a -> List a
-insertLast new xs = xs ++ [new]
+insertLast new xs =
+    xs ++ [ new ]
 
 
 addCard : String -> List Card -> List Card
 addCard name cards =
-  let
-    newCard = Card (nextCardId cards) name
-  in
-    newCard :: cards
+    let
+        newCard =
+            Card (nextCardId cards) name
+    in
+        newCard :: cards
 
 
 moveCard : Int -> Insert -> List Card -> List Card
 moveCard cardIdToMove insert cards =
-  let
-    (otherCards, movedCards) = List.partition (\card -> card.id /= cardIdToMove) cards
-  in
-    case movedCards of
-      movedCard :: rest ->
-        case insert of
-          Before id -> insertBefore movedCard (\card -> card.id == id) otherCards
-          Last -> insertLast movedCard otherCards
-      [] -> cards
+    let
+        ( otherCards, movedCards ) =
+            List.partition (\card -> card.id /= cardIdToMove) cards
+    in
+        case movedCards of
+            movedCard :: rest ->
+                case insert of
+                    Before id ->
+                        insertBefore movedCard (\card -> card.id == id) otherCards
+
+                    Last ->
+                        insertLast movedCard otherCards
+
+            [] ->
+                cards
 
 
-cardIds = List.map .id
+cardIds : List Card -> List Int
+cardIds =
+    List.map .id
 
 
--- This function could be useful to extract only those cards that belong in a given column
--- Implementation needed...
+{-| This function could be useful to extract only those cards that belong in a given column
+Implementation needed...
+-}
 cardsInColumn : List Card -> String -> List Card
-cardsInColumn cards column = cards
+cardsInColumn cards column =
+    cards
 
 
 nextCardId : List Card -> Int
 nextCardId cards =
-  let
-    existingIds = cardIds cards
-  in
-    case List.maximum existingIds of
-      Just max -> max + 1
-      Nothing -> 0
+    let
+        existingIds =
+            cardIds cards
+    in
+        case List.maximum existingIds of
+            Just max ->
+                max + 1
+
+            Nothing ->
+                0
 
 
+model : Model
 model =
-    { cards = List.foldr addCard [] ["A card", "Another card", "Yet another card"]
+    { cards = List.foldr addCard [] [ "A card", "Another card", "Yet another card" ]
     , dragDrop = DragDrop.init
     , newCardName = ""
     }
+
 
 
 -- Update
@@ -98,112 +120,148 @@ type Msg
     | AddCard
     | EnterCardName String
 
+
+doDragDrop : DragDrop.Msg Int Insert -> Model -> ( Model, Cmd Msg )
 doDragDrop msg model =
-  let
-    ( dragModel, result ) = DragDrop.update msg model.dragDrop
-    dragId = DragDrop.getDragId model.dragDrop
-  in
-    { model
-    | dragDrop = dragModel
-    , cards =
-      case result of
-        Nothing ->
-          model.cards
+    let
+        ( dragModel, result ) =
+            DragDrop.update msg model.dragDrop
 
-        Just (_, insert) ->
-          case dragId of
-            Nothing -> model.cards
-            Just dragId -> moveCard dragId insert model.cards
-    } ! []
+        dragId =
+            DragDrop.getDragId model.dragDrop
+    in
+        { model
+            | dragDrop = dragModel
+            , cards =
+                case result of
+                    Nothing ->
+                        model.cards
+
+                    Just ( _, insert ) ->
+                        case dragId of
+                            Nothing ->
+                                model.cards
+
+                            Just dragId ->
+                                moveCard dragId insert model.cards
+        }
+            ! []
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  case msg of
+    case msg of
+        DragDropMsg dragMsg ->
+            doDragDrop dragMsg model
 
-    DragDropMsg dragMsg -> doDragDrop dragMsg model
+        AddCard ->
+            ( { model
+                | cards = addCard model.newCardName model.cards
+                , newCardName = ""
+              }
+            , Cmd.none
+            )
 
-    AddCard -> (
-      { model
-      | cards = addCard model.newCardName model.cards
-      , newCardName = ""
-      }, Cmd.none)
+        EnterCardName newName ->
+            ( { model | newCardName = newName }, Cmd.none )
 
-    EnterCardName newName -> ({ model | newCardName = newName }, Cmd.none)
 
 
 -- View
 
 
-cardStyle = style
-  [ ("background", "white")
-  , ("box-shadow", "0.5px 0.5px 3px #00000080")
-  , ("height", "40px")
-  , ("margin", "10px")
-  , ("padding", "10px")
-  , ("border-radius", "2px")
-  ]
+cardStyle =
+    style
+        [ ( "background", "white" )
+        , ( "box-shadow", "0.5px 0.5px 3px #00000080" )
+        , ( "height", "40px" )
+        , ( "margin", "10px" )
+        , ( "padding", "10px" )
+        , ( "border-radius", "2px" )
+        ]
 
 
-columnStyle = style
-  [ ("background", "#8A86FA")
-  , ("margin", "10px")
-  , ("padding", "10px")
-  , ("border-radius", "4px")
-  , ("width", "250px")
-  ]
+columnStyle =
+    style
+        [ ( "background", "#B8C3F0" )
+        , ( "margin", "10px" )
+        , ( "padding", "10px" )
+        , ( "border-radius", "4px" )
+        , ( "width", "250px" )
+        ]
 
 
-dropStyle = style
-  [ ("top", "50%")
-  , ("margin", "10px")
-  , ("height", "10px")
-  , ("border", "2px dashed black")
-  ]
+dropStyle =
+    style
+        [ ( "top", "50%" )
+        , ( "margin", "10px" )
+        , ( "height", "10px" )
+        , ( "border", "2px dashed black" )
+        ]
 
 
-inputCardStyle = style
-  [ ("margin", "10px")
-  ]
+inputCardStyle =
+    style
+        [ ( "margin", "10px" )
+        ]
 
 
-columnsStyle = style
-  [ ("display", "flex")
-  ]
+columnsStyle =
+    style
+        [ ( "display", "flex" )
+        ]
 
 
-instructionStyle = style
-  [ ("margin", "10px")
-  ]
+instructionStyle =
+    style
+        [ ( "margin", "10px" )
+        ]
 
 
+dropZone : Insert -> Html Msg
 dropZone insert =
-  div
-    ( dropStyle :: (DragDrop.droppable DragDropMsg insert) )
-    []
+    div
+        (dropStyle :: (DragDrop.droppable DragDropMsg insert))
+        []
 
 
+viewCard : Card -> Bool -> Html Msg
 viewCard card withDropZones =
-  let
-    draggableAttributes = DragDrop.draggable DragDropMsg card.id
-    attributes = cardStyle :: draggableAttributes
-    handleDropZone element = if withDropZones then (dropZone (Before card.id) :: element :: []) else [element]
-    cardElement = div attributes [ text card.label ]
-  in
-    div [] (handleDropZone cardElement)
+    let
+        draggableAttributes =
+            DragDrop.draggable DragDropMsg card.id
+
+        attributes =
+            cardStyle :: draggableAttributes
+
+        handleDropZone element =
+            if withDropZones then
+                (dropZone (Before card.id) :: element :: [])
+            else
+                [ element ]
+
+        cardElement =
+            div attributes [ text card.label ]
+    in
+        div [] (handleDropZone cardElement)
 
 
 isOneBeforeTheOther : a -> a -> List a -> Bool
 isOneBeforeTheOther one other list =
-  case list of
-    first :: second :: rest ->
-      if first == one && second == other then
-        True
-      else
-        isOneBeforeTheOther one other (second :: rest)
-    _ -> False
+    case list of
+        first :: second :: rest ->
+            if first == one && second == other then
+                True
+            else
+                isOneBeforeTheOther one other (second :: rest)
+
+        _ ->
+            False
 
 
-instructions = Markdown.toHtml [inputCardStyle] """
+instructions : Html Msg
+instructions =
+    Markdown.toHtml [ inputCardStyle ] """
 # Step 5 - Columns
 
 There are of course many ways to model columns, but let's try by adding a list
@@ -211,57 +269,76 @@ of columns (names for example) to the main model and give cards a column
 attribute.
 
 Viewing all columns is then a matter of filtering out the cards for each column
-and map viewColumn on each of the column's cards.
+and map viewColumn on each of the columns' cards.
 
 Events for dropping cards will need to keep track of what column it should end
 up in.
 
-[Step 4](../Step4/Step4.elm) [Step 6](../Step6/Step6.elm")
+[Step 4](../Step4/Step4.elm) [Step 6](../Step6/Step6.elm)
 """
 
 
-viewCardInput nameSoFar = div [inputCardStyle]
-  [ input [size 14, Events.onInput EnterCardName, value nameSoFar] []
-  , button [Events.onClick AddCard] [text "Add"]
-  ]
+viewCardInput : String -> Html Msg
+viewCardInput nameSoFar =
+    div [ inputCardStyle ]
+        [ input [ size 14, Events.onInput EnterCardName, value nameSoFar ] []
+        , button [ Events.onClick AddCard ] [ text "Add" ]
+        ]
 
 
 viewColumn : List Card -> String -> Maybe Int -> Html Msg
 viewColumn cards column dragId =
     let
-        allCardIds = cardIds cards
+        allCardIds =
+            cardIds cards
 
         isLastCardDragged =
-          Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last cards)
-          |> Maybe.withDefault False
+            Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last cards)
+                |> Maybe.withDefault False
 
         isCardBeforeDragged cardId =
-          dragId
-          |> Maybe.map (\draggedId -> isOneBeforeTheOther draggedId cardId allCardIds)
-          |> Maybe.withDefault False
+            dragId
+                |> Maybe.map (\draggedId -> isOneBeforeTheOther draggedId cardId allCardIds)
+                |> Maybe.withDefault False
 
         showZones cardId =
-          case dragId of
-            Just id -> cardId /= id && not (isCardBeforeDragged cardId)
-            Nothing -> False
+            case dragId of
+                Just id ->
+                    cardId /= id && not (isCardBeforeDragged cardId)
+
+                Nothing ->
+                    False
 
         lastDropZone =
-          case dragId of
-            Just id -> if isLastCardDragged then [] else [dropZone Last]
-            Nothing -> []
+            case dragId of
+                Just id ->
+                    if isLastCardDragged then
+                        []
+                    else
+                        [ dropZone Last ]
 
-        viewCards = List.map (\card -> viewCard card (showZones card.id)) cards
+                Nothing ->
+                    []
+
+        viewCards =
+            List.map (\card -> viewCard card (showZones card.id)) cards
     in
-        div [columnStyle] (viewCards ++ lastDropZone)
+        div [ columnStyle ] (viewCards ++ lastDropZone)
 
+
+view : Model -> Html Msg
 view model =
-  let
-     dragId = DragDrop.getDragId model.dragDrop
-     columns =
-       div [columnsStyle] [viewColumn model.cards "Column1" dragId]
-  in
-    div [] [viewCardInput model.newCardName, columns, instructions]
+    let
+        dragId =
+            DragDrop.getDragId model.dragDrop
 
+        columns =
+            div [ columnsStyle ] [ viewColumn model.cards "Column1" dragId ]
+    in
+        div [] [ viewCardInput model.newCardName, columns, instructions ]
+
+
+main : Program Never Model Msg
 main =
     program
         { init = ( model, Cmd.none )
@@ -269,4 +346,3 @@ main =
         , view = view
         , subscriptions = always Sub.none
         }
-

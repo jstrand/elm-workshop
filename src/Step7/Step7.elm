@@ -148,7 +148,7 @@ cardStyle = style
 
 
 columnStyle = style
-  [ ("background", "#8A86FA")
+  [ ("background", "#B8C3F0")
   , ("margin", "10px")
   , ("padding", "10px")
   , ("border-radius", "4px")
