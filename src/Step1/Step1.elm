@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html5.DragDrop as DragDrop
 import List.Extra exposing (splitWhen)
-
+import Markdown
 
 -- Model
 
@@ -131,18 +131,20 @@ instructionStyle = style
   ]
 
 
-instruction t = p [] [ text t ]
+instructions = Markdown.toHtml [instructionStyle] """
+# Step 1 - Dropping in
 
+Try dragging and dropping!
 
-instructions = div [instructionStyle]
-  [ h1 [] [ text "Step 1 - Dropping in" ]
-  , instruction "Try dragging and dropping!"
-  , instruction "Let's fix the first problem; make the drag drop move the cards where we expect them. Look for insertBefore in the code."
-  , p [] [ text "Concepts include passing functions as parameters, pattern matching and working with lists (tip: "
-    , a [href "http://package.elm-lang.org/packages/elm-community/list-extra/6.1.0/List-Extra#splitWhen"] [ text "splitWhen)" ]
-    ]
-  , a [href "../Step2/Step2.elm"] [text "Step 2"]
-  ]
+Let's fix the first problem; make the drag drop move the cards where we expect them.
+Look for insertBefore in the code.
+
+Concepts include passing functions as parameters, pattern matching and working with
+lists
+(tip: [splitWhen](http://package.elm-lang.org/packages/elm-community/list-extra/6.1.0/List-Extra#splitWhen))
+
+[Step 2](../Step2/Step2.elm)
+"""
 
 
 dropZone insert =

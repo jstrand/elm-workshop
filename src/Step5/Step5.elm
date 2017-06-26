@@ -5,6 +5,7 @@ import Html.Events as Events
 import Html.Attributes exposing (..)
 import Html5.DragDrop as DragDrop
 import List.Extra exposing (splitWhen, last)
+import Markdown
 
 
 -- Model
@@ -202,16 +203,21 @@ isOneBeforeTheOther one other list =
     _ -> False
 
 
-instruction t = p [] [ text t ]
+instructions = Markdown.toHtml [inputCardStyle] """
+# Step 5 - Columns
 
+There are of course many ways to model columns, but let's try by adding a list
+of columns (names for example) to the main model and give cards a column
+attribute.
 
-instructions = div [inputCardStyle]
-  [ h1 [] [ text "Step 5 - Columns" ]
-  , instruction "There are of course many ways to model columns, but let's try by adding a list of columns (names for example) to the main model and give cards a column attribute."
-  , instruction "Viewing all columns is then a matter of filtering out the cards for each column and map viewColumn on each of the column's cards."
-  , instruction "Events for dropping cards will need to keep track of what column it should end up in."
-  , a [href "../Step6/Step6.elm"] [text "Step 6"]
-  ]
+Viewing all columns is then a matter of filtering out the cards for each column
+and map viewColumn on each of the column's cards.
+
+Events for dropping cards will need to keep track of what column it should end
+up in.
+
+[Step 4](../Step4/Step4.elm) [Step 6](../Step6/Step6.elm")
+"""
 
 
 viewCardInput nameSoFar = div [inputCardStyle]

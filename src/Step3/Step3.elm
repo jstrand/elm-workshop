@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html5.DragDrop as DragDrop
 import List.Extra exposing (splitWhen, last)
+import Markdown
 
 
 -- Model
@@ -153,16 +154,18 @@ isOneBeforeTheOther one other list =
     _ -> False
 
 
-instruction t = p [] [ text t ]
+instructions = Markdown.toHtml [instructionStyle] """
+# Step 3 - Fixing a bug
 
+In this step we only want to be able to drop cards where it makes sense.
+This means that there should be no drop zone before or after the card being dragged.
 
-instructions = div [instructionStyle]
-  [ h1 [] [ text "Step 3 - Fixing a bug" ]
-  , instruction "In this step we only want to be able to drop cards where it makes sense. This means that there should be no drop zone before or after the card being dragged."
-  , instruction "Code has already been added to do this, feel free to look it over. Does it work though?"
-  , instruction "When it works, move on!"
-  , a [href "../Step4/Step4.elm"] [text "Step 4"]
-  ]
+Code has already been added to do this, feel free to look it over. Does it work though?
+
+When it works, move on!
+
+[Step 3](../Step3/Step3.elm) [Step 4](../Step4/Step4.elm)
+"""
 
 
 view model =

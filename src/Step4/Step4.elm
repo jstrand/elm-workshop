@@ -5,6 +5,7 @@ import Html.Events as Events
 import Html.Attributes exposing (..)
 import Html5.DragDrop as DragDrop
 import List.Extra exposing (splitWhen, last)
+import Markdown
 
 
 -- Model
@@ -177,15 +178,16 @@ isOneBeforeTheOther one other list =
     _ -> False
 
 
-instruction t = p [] [ text t ]
+instructions = Markdown.toHtml [inputCardStyle] """
+# Step 4 - The Text Field
 
+It's time to add cards. An input field is there along with an alluring button.
 
-instructions = div [inputCardStyle]
-  [ h1 [] [ text "Step 4 - The Text Field" ]
-  , instruction "It's time to add cards. An input field is there along with an alluring button."
-  , instruction "The input field needs some events, the model needs to hold more data and there should be a message to add cards and handle input of the new card name."
-  , a [href "../Step5/Step5.elm"] [text "Then it's time to add columns in step 5"]
-  ]
+The input field needs some events, the model needs to hold more data and there
+should be a message to add cards and handle input of the new card name.
+
+[Step 3](../Step3/Step3.elm) [Step 5](../Step5/Step5.elm)
+"""
 
 
 -- Help me!

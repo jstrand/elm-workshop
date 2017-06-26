@@ -5,6 +5,7 @@ import Html.Events as Events
 import Html.Attributes exposing (..)
 import Html5.DragDrop as DragDrop
 import List.Extra exposing (splitWhen, last)
+import Markdown
 
 
 -- Model
@@ -212,16 +213,22 @@ getOneAfterThisOne : List a -> a -> Maybe a
 getOneAfterThisOne list thisOne = Nothing
 
 
-instruction t = p [] [ text t ]
+instructions = Markdown.toHtml [inputCardStyle] """
+# Step 6 - Performance
 
+The performance is probably OK, but let's measure the function viewColumn and
+see if we can tweak the performance a bit.
 
-instructions = div [inputCardStyle]
-  [ h1 [] [ text "Step 6 - Performance" ]
-  , instruction "The performance is probably OK, but let's measure the function viewColumn and see if we can tweak the performance a bit."
-  , instruction "There is now both a viewColumn and viewColumn2, if you go to the benchmark both will be measured and then compared."
-  , instruction "Try to change how viewColumn2 decides when to display drop zones, viewColumn checks each card and looks for the dragged card amongst all cards, try to turn this around by looking up the card before the dragged card. A type signature for ```getOneAfterThisOne``` has been provided."
-  , a [href "Benchmark.elm"] [text "Benchmark"]
-  ]
+There is now both a viewColumn and viewColumn2, if you go to the benchmark
+both will be measured and then compared.
+
+Try to change how viewColumn2 decides when to display drop zones, viewColumn
+checks each card and looks for the dragged card amongst all cards, try to turn
+this around by looking up the card before the dragged card. A type signature
+for ```getOneAfterThisOne``` has been provided.
+
+[Step 5](../Step5/Step5.elm) [Benchmark](Benchmark.elm)
+"""
 
 
 viewCardInput nameSoFar = div [inputCardStyle]
@@ -268,7 +275,8 @@ viewColumn2 cards column dragId =
           Maybe.map2 (\draggedId theLastCard -> draggedId == theLastCard.id) dragId (last cards)
           |> Maybe.withDefault False
 
-        -- Help me out
+        -- Help me out!
+        -- Implement getOneAfterThisOne and use it here
         isCardBeforeBeingDragged cardId = False
 
         showZones cardId =
